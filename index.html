@@ -3,88 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Core Intelligence - Alan</title>
+    <title>Core Intelligence</title>
     <style>
-        body { background: #0b0b0b; color: #e0e0e0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
-        #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .input-area { padding: 15px; background: #161616; display: flex; gap: 10px; border-top: 1px solid #333; }
-        input { flex: 1; padding: 12px; border-radius: 25px; border: 1px solid #444; background: #222; color: #fff; outline: none; padding-left: 20px; }
-        button { padding: 12px 25px; background: #1a73e8; border: none; color: #fff; border-radius: 25px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:disabled { background: #555; }
-        .msg { padding: 12px 18px; border-radius: 18px; max-width: 85%; line-height: 1.5; font-size: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .user { background: #1a73e8; align-self: flex-end; color: white; border-bottom-right-radius: 2px; }
-        .ai { background: #2d2d2d; align-self: flex-start; border-bottom-left-radius: 2px; border: 1px solid #3c3c3c; }
-        #status { font-size: 11px; color: #888; text-align: center; padding: 10px; letter-spacing: 1px; }
+        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .input-box { padding: 15px; background: #111; display: flex; gap: 10px; border-top: 1px solid #222; }
+        input { flex: 1; padding: 12px; border-radius: 8px; border: none; background: #222; color: #fff; outline: none; }
+        button { padding: 12px 20px; background: #1a73e8; border: none; color: #fff; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        button:disabled { background: #444; cursor: not-allowed; }
+        .msg { padding: 12px; border-radius: 12px; max-width: 85%; font-size: 15px; line-height: 1.4; }
+        .user { background: #1a73e8; align-self: flex-end; }
+        .ai { background: #222; align-self: flex-start; border: 1px solid #333; }
+        #status { font-size: 11px; color: #666; text-align: center; padding: 5px; background: #080808; }
     </style>
 </head>
 <body>
 
-<div id="status">SISTEM MEMUAI...</div>
+<div id="status">MENGHUBUNGKAN KE MEMORI LOKAL...</div>
 <div id="chat">
-    <div class="msg ai">Sistem Aktif. Selamat datang, Alan. Apa yang ingin kamu diskusikan hari ini?</div>
+    <div class="msg ai">Sistem Aktif. Selamat datang, Alan.</div>
 </div>
 
-<div class="input-area">
-    <input type="text" id="userInput" placeholder="Tulis pesan..." autocomplete="off">
-    <button id="sendBtn" disabled>MUAT...</button>
+<div class="input-box">
+    <input type="text" id="in" placeholder="Tanya Core Intelligence..." autocomplete="off">
+    <button id="btn" disabled>LOAD...</button>
 </div>
 
 <script type="module">
     import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1';
 
-    // PENTING: Arahkan ke folder 'brain' hasil Action kamu tadi
+    // WAJIB: Arahkan ke folder 'brain' di GitHub Pages kamu
     env.allowRemoteModels = false;
-    env.localModelPath = './';
+    env.localModelPath = './'; 
 
     let model = null;
-    const status = document.getElementById('status');
     const chat = document.getElementById('chat');
-    const input = document.getElementById('userInput');
-    const btn = document.getElementById('sendBtn');
+    const input = document.getElementById('in');
+    const btn = document.getElementById('btn');
+    const status = document.getElementById('status');
 
-    async function initAI() {
+    async function bangunkanAI() {
         try {
-            status.innerText = "MENGAKSES MEMORI LOKAL (26MB)...";
-            // Memanggil folder 'brain' dan file onnx di dalamnya
+            status.innerText = "SEDANG MEMUAT OTAK (26MB)...";
+            // Memanggil folder 'brain' yang isinya model asli kamu
             model = await pipeline('text-generation', 'brain', {
                 quantized: true,
-                model_file_name: 'onnx/model_quantized.onnx'
+                model_file_name: 'onnx/model_quantized.onnx' 
             });
             status.innerText = "CORE INTELLIGENCE: ONLINE";
             btn.disabled = false;
             btn.innerText = "KIRIM";
         } catch (e) {
-            status.innerText = "ERROR: GAGAL MENGAKSES OTAK.";
+            status.innerText = "ERROR: GAGAL MEMBACA FILE MODEL.";
             console.error(e);
         }
     }
-    initAI();
+    bangunkanAI();
 
-    async function sendMessage() {
+    async function kirim() {
         const text = input.value.trim();
         if (!text || !model) return;
 
         appendMsg(text, 'user');
         input.value = '';
-        const aiMsg = appendMsg("Sedang berpikir...", 'ai');
-        chat.scrollTop = chat.scrollHeight;
+        const aiMsg = appendMsg("...", 'ai');
 
         try {
-            // Template prompt agar AI tahu identitasnya
-            const prompt = `<|im_start|>system\nKamu adalah Core Intelligence, asisten cerdas Alan. Jawab dengan singkat dan padat.\n<|im_end|>\n<|im_start|>user\n${text}<|im_end|>\n<|im_start|>assistant\n`;
+            const prompt = `<|im_start|>system\nKamu Core Intelligence, asisten cerdas Alan.\n<|im_end|>\n<|im_start|>user\n${text}<|im_end|>\n<|im_start|>assistant\n`;
             
             const out = await model(prompt, { 
                 max_new_tokens: 100, 
-                temperature: 0.7,
-                repetition_penalty: 1.1 
+                temperature: 0.7 
             });
 
-            const hasil = out[0].generated_text.split('assistant\n')[1]?.trim() || "Maaf Lan, aku kehilangan fokus.";
-            aiMsg.innerText = hasil;
+            aiMsg.innerText = out[0].generated_text.split('assistant\n')[1].trim();
         } catch (err) {
-            aiMsg.innerText = "Sistem sibuk. Coba lagi, Lan.";
+            aiMsg.innerText = "Sistem sibuk, coba lagi Lan.";
         }
-        chat.scrollTop = chat.scrollHeight;
     }
 
     function appendMsg(t, s) {
@@ -96,8 +91,8 @@
         return d;
     }
 
-    btn.onclick = sendMessage;
-    input.onkeypress = (e) => { if(e.key === 'Enter') sendMessage(); };
+    btn.onclick = kirim;
+    input.onkeypress = (e) => { if(e.key === 'Enter') kirim(); };
 </script>
 
 </body>
