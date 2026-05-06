@@ -5,51 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Core Intelligence</title>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        #status { font-size: 11px; color: #888; text-align: center; padding: 10px; background: #0a0a0a; border-bottom: 1px solid #222; letter-spacing: 1px; }
+        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        #status { font-size: 11px; color: #888; text-align: center; padding: 10px; background: #0a0a0a; border-bottom: 1px solid #222; }
         #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
         .input-area { padding: 15px; background: #111; display: flex; gap: 10px; border-top: 1px solid #222; }
         input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #222; color: #fff; outline: none; }
         button { padding: 12px 20px; background: #1a73e8; border: none; color: #fff; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        button:disabled { background: #444; opacity: 0.5; }
-        .msg { padding: 12px 16px; border-radius: 12px; max-width: 85%; line-height: 1.5; font-size: 15px; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .msg { padding: 12px; border-radius: 12px; max-width: 85%; line-height: 1.5; }
         .user { background: #1a73e8; align-self: flex-end; }
         .ai { background: #262626; align-self: flex-start; border: 1px solid #333; }
     </style>
 </head>
 <body>
 
-<div id="status">MENGHUBUNGKAN KE MEMORI LOKAL...</div>
-
-<div id="chat">
-    <div class="msg ai">Sistem Aktif. Menunggu perintah, Alan...</div>
-</div>
+<div id="status">MENGHUBUNGKAN KE FOLDER OTAK...</div>
+<div id="chat"><div class="msg ai">Sistem Aktif. Ada apa, Lan?</div></div>
 
 <div class="input-area">
-    <input type="text" id="userInput" placeholder="Tanya sesuatu..." autocomplete="off">
-    <button id="sendBtn" disabled>LOAD...</button>
+    <input type="text" id="in" placeholder="Tanya sesuatu..." autocomplete="off">
+    <button id="btn" disabled>LOAD...</button>
 </div>
 
 <script type="module">
     import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1';
 
-    // Beritahu sistem bahwa file ada di folder 'brain'
+    // Setel agar mencari di folder 'otak' di repo kamu
     env.allowRemoteModels = false;
     env.localModelPath = './'; 
 
     let model = null;
     const status = document.getElementById('status');
     const chat = document.getElementById('chat');
-    const input = document.getElementById('userInput');
-    const btn = document.getElementById('sendBtn');
+    const input = document.getElementById('in');
+    const btn = document.getElementById('btn');
 
-    // 1. Fungsi Memuat Otak
     async function loadAI() {
         try {
-            status.innerText = "SEDANG MEMBACA FOLDER BRAIN (26MB)...";
+            status.innerText = "MEMBACA MEMORI DI FOLDER 'OTAK'...";
             
-            // Panggil folder 'brain' sebagai pusat model
-            model = await pipeline('text-generation', 'brain', {
+            // SESUAI GAMBAR: Folder kamu namanya 'otak'
+            model = await pipeline('text-generation', 'otak', {
                 quantized: true,
                 model_file_name: 'onnx/model_quantized.onnx' 
             });
@@ -58,48 +54,31 @@
             btn.disabled = false;
             btn.innerText = "KIRIM";
         } catch (e) {
-            status.innerText = "GAGAL: " + e.message;
-            console.error("Detail Error:", e);
+            status.innerText = "GAGAL: Pastikan config.json ada di dalam folder 'otak'.";
+            console.error(e);
         }
     }
-
-    // Jalankan pemuatan otomatis saat web dibuka
     loadAI();
 
-    // 2. Fungsi Kirim Pesan
     async function kirim() {
-        const text = input.value.trim();
-        if (!text || !model) return;
+        const txt = input.value.trim();
+        if (!txt || !model) return;
 
-        // Tampilkan chat user
-        appendMsg(text, 'user');
+        appendMsg(txt, 'user');
         input.value = '';
-        
-        // Buat elemen chat AI (Loading)
         const aiMsg = appendMsg("Berpikir...", 'ai');
-        chat.scrollTop = chat.scrollHeight;
 
         try {
-            // Prompt agar AI lebih pinter
-            const prompt = `<|im_start|>system\nKamu adalah Core Intelligence, asisten pribadi Alan yang cerdas dan lugas. Jawab dengan singkat.\n<|im_end|>\n<|im_start|>user\n${text}<|im_end|>\n<|im_start|>assistant\n`;
-            
-            const out = await model(prompt, { 
-                max_new_tokens: 100, 
-                temperature: 0.7 
-            });
-
-            // Ambil teks setelah kata 'assistant\n'
-            const fullText = out[0].generated_text;
-            const hasil = fullText.split('assistant\n')[1]?.trim() || "Maaf Lan, aku kehilangan koneksi memori.";
-            
+            const prompt = `<|im_start|>system\nKamu Core Intelligence, asisten cerdas Alan.\n<|im_end|>\n<|im_start|>user\n${txt}<|im_end|>\n<|im_start|>assistant\n`;
+            const out = await model(prompt, { max_new_tokens: 100, temperature: 0.7 });
+            const hasil = out[0].generated_text.split('assistant\n')[1]?.trim() || "Aku bingung, Lan.";
             aiMsg.innerText = hasil;
         } catch (err) {
-            aiMsg.innerText = "Sistem sibuk. Coba lagi nanti, Lan.";
+            aiMsg.innerText = "RAM penuh, coba lagi.";
         }
         chat.scrollTop = chat.scrollHeight;
     }
 
-    // 3. Fungsi Tambah Pesan ke Layar
     function appendMsg(t, s) {
         const d = document.createElement('div');
         d.className = `msg ${s}`;
@@ -109,10 +88,8 @@
         return d;
     }
 
-    // Event Listener
     btn.onclick = kirim;
     input.onkeypress = (e) => { if(e.key === 'Enter') kirim(); };
 </script>
-
 </body>
 </html>
