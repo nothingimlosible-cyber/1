@@ -3,99 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Qwen AI - Alan</title>
+    <title>AI Alan - Ringan</title>
     <style>
-        body { font-family: sans-serif; background: #0b0b0b; color: #e0e0e0; margin: 0; display: flex; flex-direction: column; height: 100vh; }
-        #header { padding: 15px; background: #151515; text-align: center; border-bottom: 1px solid #00ff88; color: #00ff88; font-weight: bold; letter-spacing: 1px; }
-        #chat-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
-        .msg { padding: 12px 16px; border-radius: 18px; max-width: 85%; font-size: 14px; line-height: 1.5; }
-        .user { background: #00ff88; color: #000; align-self: flex-end; border-bottom-right-radius: 2px; font-weight: 500; }
-        .ai { background: #222; align-self: flex-start; border: 1px solid #333; border-bottom-left-radius: 2px; }
-        #input-area { padding: 15px; background: #151515; display: flex; gap: 8px; border-top: 1px solid #333; }
-        input { flex: 1; padding: 12px; border-radius: 25px; border: 1px solid #444; background: #000; color: #fff; outline: none; }
-        button { background: #00ff88; color: #000; border: none; padding: 0 20px; border-radius: 25px; cursor: pointer; font-weight: bold; }
-        button:disabled { background: #444; color: #888; }
-        #status { font-size: 11px; color: #00ff88; text-align: center; padding: 5px; background: #000; opacity: 0.8; }
+        body { font-family: sans-serif; background: #000; color: #fff; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        #chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .msg { padding: 10px 15px; border-radius: 15px; max-width: 85%; font-size: 14px; }
+        .user { background: #007bff; align-self: flex-end; }
+        .ai { background: #333; align-self: flex-start; }
+        #input-area { padding: 10px; background: #111; display: flex; gap: 5px; }
+        input { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #444; background: #222; color: #fff; }
+        button { background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 20px; cursor: pointer; }
+        #status { font-size: 10px; text-align: center; color: #888; padding: 2px; }
     </style>
 </head>
 <body>
 
-    <div id="header">QWEN 2.5 MOBILE SYSTEM</div>
-    <div id="status">Mengaktifkan sistem...</div>
-
-    <div id="chat-container" id="chatBox">
-        <div class="msg ai">Menyiapkan otak Qwen... (Tunggu sebentar ya, Lan)</div>
+    <div id="chat-box">
+        <div class="msg ai">Halo Alan! Sistem sudah diperbaiki biar enteng di HP. Coba tes chat yuk!</div>
     </div>
-
+    <div id="status">Status: Ready</div>
     <div id="input-area">
-        <input type="text" id="userInput" placeholder="Loading model..." disabled>
-        <button id="sendBtn" onclick="sendMessage()" disabled>KIRIM</button>
+        <input type="text" id="userInput" placeholder="Ketik pesan...">
+        <button onclick="askAI()">Kirim</button>
     </div>
 
-    <script type="module">
-        import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers';
-
-        let chatbot;
-        const status = document.getElementById('status');
-        const input = document.getElementById('userInput');
-        const btn = document.getElementById('sendBtn');
-        const chatBox = document.getElementById('chat-container');
-
-        async function init() {
-            try {
-                status.innerText = "Status: Downloading Qwen-0.5B (Ringan)...";
-                
-                // Memanggil Qwen 2.5 versi paling kecil & pinter
-                chatbot = await pipeline('text-generation', 'Xenova/Qwen2.5-0.5B-Instruct');
-
-                status.innerText = "Status: Online";
-                input.disabled = false;
-                input.placeholder = "Tanya apa saja ke Qwen...";
-                btn.disabled = false;
-                chatBox.innerHTML += `<div class="msg ai">Qwen sudah siap! Ukurannya kecil tapi otaknya encer. Silakan chat, Alan!</div>`;
-            } catch (err) {
-                status.innerText = "Status: Gagal Load!";
-                console.error(err);
-            }
-        }
-
-        window.sendMessage = async () => {
+    <script>
+        async function askAI() {
+            const input = document.getElementById('userInput');
+            const chatBox = document.getElementById('chat-box');
+            const status = document.getElementById('status');
             const text = input.value.trim();
-            if (!text || btn.disabled) return;
 
-            // Tampilkan pesan user
-            const uDiv = document.createElement('div');
-            uDiv.className = 'msg user';
-            uDiv.innerText = text;
-            chatBox.appendChild(uDiv);
-            
+            if (!text) return;
+
+            // Tampilkan pesan kamu
+            chatBox.innerHTML += `<div class="msg user">${text}</div>`;
             input.value = '';
-            btn.disabled = true;
-            status.innerText = "Status: Qwen sedang berpikir...";
+            status.innerText = "Sistem sedang berpikir...";
 
             try {
-                const results = await chatbot(text, { 
-                    max_new_tokens: 100,
-                    temperature: 0.7,
-                    top_p: 0.9
-                });
-
-                const aiText = results[0].generated_text.replace(text, "").trim();
+                // Kita pakai API publik yang gratis & ringan buat HP
+                const response = await fetch(`https://api.simsimi.vn/v2/?text=${encodeURIComponent(text)}&lc=id`);
+                const data = await response.json();
                 
-                const aDiv = document.createElement('div');
-                aDiv.className = 'msg ai';
-                aDiv.innerText = aiText || "Maaf Lan, aku agak bingung jawabnya.";
-                chatBox.appendChild(aDiv);
-            } catch (e) {
-                console.error(e);
+                let reply = data.result || "Maaf Alan, sistem lagi sibuk.";
+                chatBox.innerHTML += `<div class="msg ai">${reply}</div>`;
+            } catch (err) {
+                chatBox.innerHTML += `<div class="msg ai">Error: Pastikan internet aktif ya!</div>`;
             }
 
-            btn.disabled = false;
-            status.innerText = "Status: Online";
+            status.innerText = "Status: Ready";
             chatBox.scrollTop = chatBox.scrollHeight;
-        };
-
-        init();
+        }
     </script>
 </body>
 </html>
