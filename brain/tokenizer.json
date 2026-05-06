@@ -1,1 +1,12 @@
-Couldn't find the requested file /models/Xenova/SmolLM-135M-Instruct/tokenizer.json in xenova/transformers.js.
+{
+  "add_bos_token": true,
+  "add_eos_token": false,
+  "bos_token": "<|endoftext|>",
+  "clean_up_tokenization_spaces": true,
+  "eos_token": "<|endoftext|>",
+  "model_max_length": 2048,
+  "pad_token": "<|endoftext|>",
+  "tokenizer_class": "LlamaTokenizer",
+  "unk_token": null,
+  "chat_template": "{% for message in messages %}{% if message['role'] == 'user' %}{{ 'user\n' + message['content'] + '\n' }}{% elif message['role'] == 'assistant' %}{{ 'assistant\n' + message['content'] + '\n' }}{% endif %}{% endfor %}"
+}
