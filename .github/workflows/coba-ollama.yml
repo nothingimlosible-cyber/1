@@ -1,31 +1,23 @@
-name: Gas Instal Ollama
-on: [push, workflow_dispatch] # Jalan tiap push atau bisa klik tombol manual
+name: Gas Ollama Alan
+on: [push, workflow_dispatch]
 
 jobs:
-  test-ollama:
+  eksekusi:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
+      - name: Ambil File
         uses: actions/checkout@v4
 
-      - name: Proses Instalasi
-        run: |
-          echo "Lagi nginstall, tungguin..."
-          curl -fsSL https://ollama.com/install.sh | sh
-          
-      - name: Cek Berhasil atau Enggak
-        run: |
-          ollama --version
-          echo "Mantap, terinstal!"
+      - name: Pasang Ollama
+        run: curl -fsSL https://ollama.com/install.sh | sh
 
-      - name: Coba Tarik Model Ringan
+      - name: Tes Robotnya
         run: |
-          # Pakai 'serve' dulu di background supaya bisa 'pull'
+          # 1. Nyalakan mesin (server)
           ollama serve & 
-          sleep 5 # Kasih napas 5 detik biar servernya bangun
-          ollama pull tinydolphin # Model super kecil buat tes doang
           
-      - name: Tes Tanya AI
-        run: |
-          ollama run tinydolphin "Sapa saya dengan nama Alan dan katakan 'Siap Bos!'"
-
+          # 2. Tunggu 5 detik biar siap
+          sleep 5 
+          
+          # 3. Langsung suruh jawab (pake model kecil biar cepet)
+          ollama run tinydolphin "Halo, ini Alan. Kamu sudah siap?"
