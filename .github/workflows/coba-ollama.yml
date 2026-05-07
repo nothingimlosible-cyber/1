@@ -1,23 +1,36 @@
-name: Gas Ollama Alan
+name: Unduh dan Simpan Model Ollama
 on: [push, workflow_dispatch]
 
 jobs:
-  eksekusi:
+  setup-ollama:
     runs-on: ubuntu-latest
     steps:
-      - name: Ambil File
+      - name: Ambil Kode dari Repo
         uses: actions/checkout@v4
 
-      - name: Pasang Ollama
+      # INI KUNCINYA: Titipkan folder model ke gudang GitHub
+      - name: Cache Model Ollama
+        id: cache-ollama
+        uses: actions/cache@v4
+        with:
+          path: ~/.ollama
+          key: ${{ runner.os }}-ollama-tinydolphin
+
+      - name: Install Aplikasi Ollama
         run: curl -fsSL https://ollama.com/install.sh | sh
 
-      - name: Tes Robotnya
+      # Proses unduh HANYA JALAN kalau di gudang belum ada (Cache Miss)
+      - name: Unduh Model (Hanya Jika Belum Ada)
+        if: steps.cache-ollama.outputs.cache-hit != 'true'
         run: |
-          # 1. Nyalakan mesin (server)
-          ollama serve & 
-          
-          # 2. Tunggu 5 detik biar siap
-          sleep 5 
-          
-          # 3. Langsung suruh jawab (pake model kecil biar cepet)
-          ollama run tinydolphin "Halo, ini Alan. Kamu sudah siap?"
+          ollama serve &
+          sleep 5
+          ollama pull tinydolphin
+          pkill ollama # Matikan dulu biar rapi
+
+      - name: Coba Jalankan Model yang Tersimpan
+        run: |
+          ollama serve &
+          sleep 5
+          # Sekarang model 'tinydolphin' sudah ada di file sistem kita
+          ollama run tinydolphin "Halo Alan, model ini sudah tersimpan di cache!"
